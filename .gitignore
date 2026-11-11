@@ -1,0 +1,31 @@
+# Données
+data/
+
+# Exports
+exports/
+
+# Entraînements
+runs/
+
+# Fichier Audio
+wav/
+*.wav
+
+# Screens
+screens/
+
+# Logs
+*.log
+
+# Bases de données
+*.mdb
+
+# Modèles IA
+*.ckpt
+
+# Python
+__pycache__/
+*.pyc
+
+# PyCharm
+.idea/

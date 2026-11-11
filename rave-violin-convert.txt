@@ -1,0 +1,22 @@
+Get-ChildItem "dataset\strings\violin\*.mp3" | ForEach-Object {
+>>     ffmpeg -y -i $_.FullName "dataset\strings\violin\wav\
+}$($_.BaseName).wav"
+
+rave preprocess --input_path dataset\violin\wav --output_path data\violin --lazy *> preprocess.log
+
+rave train --name violin --db_path data\violin --out_path runs --config v2_small #Normal
+
+rave train --name violin --db_path data\violin --out_path runs --config v3  #GPU
+
+rave train --name violin --db_path data\violin --out_path runs --channels 1
+
+rave train --name violin --db_path data\violin --out_path runs --channels 1 --config v2
+
+rave train --name violin --db_path data\violin --out_path runs --channels 1 --gpu 0
+
+cd runs/violin_e18d54798e
+tensorboard --logdir . --bind_all
+
+rave export --run runs\violin_e18d54798e --output exports\violin.ts
+
+rave export --run runs\violin_e18d54798e --output exports\violin_099.ts --fidelity 0.99
