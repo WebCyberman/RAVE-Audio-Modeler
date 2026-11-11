@@ -1,10 +1,10 @@
-🇫🇷 Version française : [README.fr.md](https://github.com/WebCyberman/RAVE-Audio-Modeller/blob/main/README.fr.md)
+🇫🇷 Version française : [README.fr.md](https://github.com/WebCyberman/RAVE-Audio-Modeler/blob/main/README.fr.md)
 
-🇬🇧 English version : [README.md](https://github.com/WebCyberman/RAVE-Audio-Modeller/blob/main/README.md)
+🇬🇧 English version : [README.md](https://github.com/WebCyberman/RAVE-Audio-Modeler/blob/main/README.md)
 
 <div align="center">
 
-# 🎵 RAVE Audio Modeller
+# 🎵 RAVE Audio Modeler
 
 ### Train, export and manage RAVE models through a modern graphical interface
 
@@ -416,9 +416,9 @@ CPU-only training is possible but significantly slower.
 Clone the repository:
 
 ```bash
-git clone https://github.com/WebCyberman/RAVE-Audio-Modeller.git
+git clone https://github.com/WebCyberman/RAVE-Audio-Modeler.git
 
-cd RAVE-Audio-Modeller
+cd RAVE-Audio-Modeler
 ```
 
 Create a virtual environment:

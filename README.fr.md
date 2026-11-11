@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎵 RAVE Audio Modeller
+# 🎵 RAVE Audio Modeler
 
 ### Interface graphique complète pour entraîner, exporter et gérer des modèles RAVE
 
@@ -408,9 +408,9 @@ L'entraînement CPU est possible mais nettement plus lent.
 Cloner le dépôt :
 
 ```bash
-git clone https://github.com/WebCyberman/RAVE-Audio-Modeller.git
+git clone https://github.com/WebCyberman/RAVE-Audio-Modeler.git
 
-cd RAVE-Audio-Modeller
+cd RAVE-Audio-Modeler
 ```
 
 Créer un environnement virtuel :
