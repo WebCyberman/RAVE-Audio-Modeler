@@ -503,7 +503,7 @@ If you find this project useful:
 - ⭐ Star the repository
 - 🐛 Report bugs
 - 💡 Suggest new features
-- �he LICENSE file for details.
+- 🔀 LICENSE file for details.
 
 ---
 
