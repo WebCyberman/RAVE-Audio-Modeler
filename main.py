@@ -747,6 +747,199 @@ class TrainWorker(QObject):
 
         self.finished.emit()
 
+class ExportWorker(QObject):
+
+    started = Signal()
+    finished = Signal()
+
+    log = Signal(str)
+
+    task = Signal(str)
+    file = Signal(str)
+
+    def __init__(self, datasets):
+
+        super().__init__()
+
+        self.process = None
+        self.datasets = datasets
+        self.stop_requested = False
+
+    def stop(self):
+
+        self.stop_requested = True
+
+        if self.process:
+
+            try:
+                self.process.terminate()
+            except Exception:
+                pass
+
+    def run(self):
+
+        self.started.emit()
+
+        total = len(
+            self.datasets
+        )
+
+        for index, dataset in enumerate(
+            self.datasets,
+            start=1
+        ):
+
+            if self.stop_requested:
+                break
+
+            run_dir = get_latest_run(
+                dataset.name
+            )
+
+            if run_dir is None:
+
+                self.log.emit(
+                    f"Aucun run trouvé pour "
+                    f"{dataset.name}"
+                )
+
+                continue
+
+            exports_dir = Path(
+                "exports"
+            )
+
+            exports_dir.mkdir(
+                exist_ok=True
+            )
+
+            output_file = (
+                exports_dir
+                / f"{dataset.name}.ts"
+            )
+
+            self.task.emit(
+                f"[{index}/{total}] "
+                f"Export : {dataset.name}"
+            )
+
+            self.log.emit(
+                f"Export de {dataset.name}"
+            )
+
+            self.log.emit(
+                f"Run : {run_dir.name}"
+            )
+
+            try:
+
+                command = [
+
+                    "rave",
+                    "export",
+
+                    "--run",
+                    str(run_dir),
+
+                    "--output",
+                    str(output_file),
+
+                    "--name",
+                    dataset.name,
+
+                    "--streaming"
+                ]
+
+                self.process = subprocess.Popen(
+                    command,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    bufsize=1
+                )
+
+                while True:
+
+                    if self.stop_requested:
+
+                        self.process.terminate()
+
+                        self.log.emit(
+                            "Export interrompu."
+                        )
+
+                        break
+
+                    line = (
+                        self.process.stdout.readline()
+                    )
+
+                    if (
+                        not line
+                        and self.process.poll()
+                        is not None
+                    ):
+                        break
+
+                    if line:
+
+                        clean_line = (
+                            line.rstrip()
+                        )
+
+                        self.log.emit(
+                            clean_line
+                        )
+
+                        self.file.emit(
+                            clean_line
+                        )
+
+                return_code = (
+                    self.process.wait()
+                )
+
+                if return_code != 0:
+
+                    self.log.emit(
+                        f"Erreur export "
+                        f"({return_code})"
+                    )
+
+                    continue
+
+                if output_file.exists():
+
+                    self.log.emit(
+                        f"Export terminé : "
+                        f"{output_file.name}"
+                    )
+
+                else:
+
+                    self.log.emit(
+                        "Export terminé mais "
+                        "fichier absent."
+                    )
+
+            except Exception as e:
+
+                self.log.emit(
+                    f"Erreur export : {e}"
+                )
+
+        self.process = None
+
+        self.file.emit("")
+
+        self.task.emit(
+            "Export terminé"
+        )
+
+        self.finished.emit()
+
 class DatasetTree(QTreeWidget):
 
     def __init__(self):
@@ -885,40 +1078,99 @@ def get_dataset_duration(dataset):
 
 def has_checkpoint(dataset_name):
 
-    run_dir = (
-        Path("runs")
-        / dataset_name
-    )
+    runs_dir = Path("runs")
 
-    if not run_dir.exists():
+    if not runs_dir.exists():
         return False
 
-    checkpoints = list(
-        run_dir.rglob("*.ckpt")
-    )
+    for run_dir in runs_dir.iterdir():
 
-    return len(checkpoints) > 0
+        if not run_dir.is_dir():
+            continue
+
+        if not run_dir.name.startswith(
+            dataset_name + "_"
+        ):
+            continue
+
+        checkpoints = list(
+            run_dir.rglob("*.ckpt")
+        )
+
+        if checkpoints:
+            return True
+
+    return False
 
 def get_latest_checkpoint(dataset_name):
 
-    run_dir = (
-        Path("runs")
-        / dataset_name
-    )
+    runs_dir = Path("runs")
 
-    if not run_dir.exists():
+    if not runs_dir.exists():
         return None
 
-    checkpoints = sorted(
-        run_dir.rglob("*.ckpt"),
+    checkpoints = []
+
+    for run in runs_dir.iterdir():
+
+        if not run.is_dir():
+            continue
+
+        if not run.name.startswith(
+            dataset_name + "_"
+        ):
+            continue
+
+        checkpoints.extend(
+            run.rglob("*.ckpt")
+        )
+
+    if not checkpoints:
+        return None
+
+    checkpoints.sort(
         key=lambda p: p.stat().st_mtime,
         reverse=True
     )
 
-    if checkpoints:
-        return checkpoints[0]
+    return checkpoints[0]
 
-    return None
+def get_latest_run(dataset_name):
+
+    runs_dir = Path("runs")
+
+    if not runs_dir.exists():
+        return None
+
+    runs = []
+
+    for run_dir in runs_dir.iterdir():
+
+        if not run_dir.is_dir():
+            continue
+
+        if not run_dir.name.startswith(
+            dataset_name + "_"
+        ):
+            continue
+
+        ckpts = list(
+            run_dir.rglob("*.ckpt")
+        )
+
+        if ckpts:
+            runs.append(run_dir)
+
+    if not runs:
+        return None
+
+    runs.sort(
+        key=lambda p: p.stat().st_mtime,
+        reverse=True
+    )
+
+    return runs[0]
+
 
 # ---------------------------------------------------------
 # MainWindow
@@ -1675,10 +1927,10 @@ class MainWindow(QMainWindow):
         )
 
         self.lbl_ckpt.setText(
-            "Oui" if (
-                Path("runs")
-                / dataset.name
-            ).exists()
+            "Oui"
+            if has_checkpoint(
+                dataset.name
+            )
             else "Non"
         )
 
@@ -1985,6 +2237,34 @@ class MainWindow(QMainWindow):
             self.write_log(
                 f"Export : {dataset.name}"
             )
+
+    def export_started(self):
+
+        self.progress.setRange(
+            0,
+            0
+        )
+
+        self.write_log(
+            "Export démarré"
+        )
+
+    def export_finished(self):
+
+        self.progress.setRange(
+            0,
+            100
+        )
+
+        self.progress.setValue(
+            100
+        )
+
+        self.write_log(
+            "Export terminé"
+        )
+
+        self.scan_datasets()
 
     def update_selection_count(self):
 

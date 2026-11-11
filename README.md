@@ -1,319 +1,516 @@
+🇫🇷 Version française : [README.fr.md](https://github.com/WebCyberman/RAVE-Audio-Modeller/blob/main/README.fr.md)
+
+🇬🇧 English version : [README.md](https://github.com/WebCyberman/RAVE-Audio-Modeller/blob/main/README.md)
+
+<div align="center">
+
 # 🎵 RAVE Audio Modeller
 
-Interface graphique PySide6 permettant de préparer, prétraiter, entraîner et exporter facilement des modèles **RAVE (Realtime Audio Variational AutoEncoder)** pour la synthèse et la transformation sonore.
+### Train, export and manage RAVE models through a modern graphical interface
 
-Ce projet automatise l'ensemble du workflow de création de modèles RAVE à partir de collections audio personnalisées (instruments, voix, bruitages, textures sonores, etc.) sans avoir à utiliser manuellement les commandes en ligne de commande.
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
+![PySide6](https://img.shields.io/badge/GUI-PySide6-green.svg)
+![PyTorch](https://img.shields.io/badge/PyTorch-Enabled-orange.svg)
+![RAVE](https://img.shields.io/badge/RAVE-Compatible-red.svg)
+![FFmpeg](https://img.shields.io/badge/Audio-FFmpeg-lightgrey.svg)
+![Platform](https://img.shields.io/badge/Platform-Windows-informational.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
----
+A complete GUI for the RAVE ecosystem that allows musicians, sound designers, researchers and audio enthusiasts to create neural audio models without using the command line.
 
-## ✨ Fonctionnalités
-
-### 📂 Gestion des datasets
-
-- Détection automatique des datasets présents dans le dossier `dataset/`
-- Affichage :
-  - Nom du dataset
-  - Nombre de fichiers audio
-  - Durée totale du dataset
-  - État de conversion
-  - État du prétraitement
-- Sélection rapide du dataset à utiliser
+</div>
 
 ---
 
-### 🎧 Conversion audio
+# 📸 Screenshots
 
-Conversion automatique vers le format compatible RAVE :
+> Add your screenshots here
 
-Formats supportés :
+| Dataset Management | Training |
+|-------------------|----------|
+| ![](docs/images/datasets.png) | ![](docs/images/training.png) |
+
+| Preprocessing | Export |
+|--------------|--------|
+| ![](docs/images/preprocess.png) | ![](docs/images/export.png) |
+
+---
+
+# 🚀 Overview
+
+**RAVE Audio Modeller** is a desktop application built with **PySide6** that simplifies the complete RAVE workflow.
+
+Instead of manually running commands such as:
+
+```bash
+rave preprocess
+rave train
+rave export
+```
+
+the application provides an intuitive graphical interface that manages:
+
+- Dataset discovery
+- Audio conversion
+- RAVE preprocessing
+- Model training
+- Checkpoint recovery
+- Model export
+- Progress monitoring
+- Console logs
+
+All from a single window.
+
+---
+
+# ✨ Features
+
+## 📂 Dataset Management
+
+Automatically scans the dataset folder structure and displays:
+
+- Dataset name
+- Total audio files
+- WAV files
+- Dataset duration
+- Conversion status
+- Preprocessing status
+
+Example:
+
+```text
+dataset/
+├── guitar/
+├── violin/
+├── piano/
+└── voice/
+```
+
+---
+
+## 🎧 Audio Conversion
+
+Automatically converts audio files into WAV format using FFmpeg.
+
+Supported formats:
 
 - WAV
 - MP3
 - FLAC
 - OGG
-- AIFF
 - AAC
+- AIFF
 - M4A
 
-Lorsqu'un dataset contient des fichiers dans différents formats, l'application :
+When conversion is launched, a dedicated `wav` folder is created:
 
-1. Analyse le contenu du dossier
-2. Crée automatiquement un sous-dossier `wav`
-3. Convertit les fichiers à l'aide de **FFmpeg**
-4. Conserve les fichiers d'origine
-
-Exemple :
-
-```
+```text
 dataset/
-└── violin/
-    ├── instrument1.mp3
-    ├── instrument2.flac
+└── guitar/
+    ├── sample1.mp3
+    ├── sample2.flac
     └── wav/
-        ├── instrument1.wav
-        └── instrument2.wav
+        ├── sample1.wav
+        └── sample2.wav
 ```
+
+Original files are preserved.
 
 ---
 
-### ⚙️ Prétraitement RAVE
+## 📊 Dataset Statistics
 
-L'application lance automatiquement :
+The application calculates:
+
+- Number of source audio files
+- Number of converted WAV files
+- Total dataset duration
+- Real-time dataset status
+
+Helping users estimate whether a dataset is suitable for training.
+
+---
+
+## ⚙️ RAVE Preprocessing
+
+Automatically runs:
 
 ```bash
 rave preprocess
 ```
 
-avec les paramètres appropriés.
+Features:
 
-Fonctionnalités :
+✅ Live console output
 
-- Affichage en temps réel de la sortie console
-- Affichage de la progression
-- Gestion des erreurs
-- Création automatique des dossiers dans `data/`
+✅ Progress information
 
-Exemple :
+✅ Error reporting
+
+✅ Automatic folder creation
+
+✅ Non-blocking execution
+
+Example:
 
 ```bash
 rave preprocess \
-    --input_path dataset/violin/wav \
-    --output_path data/violin \
+    --input_path dataset/guitar/wav \
+    --output_path data/guitar \
     --lazy
 ```
 
 ---
 
-### 🧠 Entraînement des modèles
+## 🧠 Model Training
 
-Lancement direct de :
+Launches RAVE training directly from the GUI.
+
+Features:
+
+- Live log display
+- Epoch monitoring
+- Progress tracking
+- Error reporting
+- Safe process termination
+- Automatic checkpoint recovery
+
+Example:
 
 ```bash
-rave train
+rave train data/guitar
 ```
-
-avec suivi complet de l'entraînement.
-
-Suivi en temps réel :
-
-- Logs RAVE
-- Epochs
-- Étapes de calcul
-- Messages d'erreur
-- Fin d'entraînement
-
-L'exécution est réalisée dans un thread dédié afin d'éviter le gel de l'interface graphique.
 
 ---
 
-### 📦 Export des modèles
+## 🔄 Automatic Checkpoint Recovery
 
-Export simplifié des modèles entraînés :
+If training is interrupted, the application automatically searches for the latest checkpoint.
+
+Example:
+
+```text
+runs/
+└── guitar/
+    └── version_3/
+        └── checkpoints/
+            └── last.ckpt
+```
+
+The next training session resumes from the latest checkpoint instead of restarting from scratch.
+
+---
+
+## 📦 Model Export
+
+Export trained models directly from the interface.
+
+The application manages:
 
 ```bash
 rave export
 ```
 
-Possibilité de sélectionner :
+and generates TorchScript models:
 
-- Fichier `.ckpt`
-- Nom du modèle exporté
-- Nombre de canaux
+```text
+guitar.ts
+```
 
-Les fichiers exportés peuvent ensuite être utilisés dans :
+usable in:
 
-- VST RAVE
+- RAVE VST
+- Python
 - Max/MSP
 - Pure Data
-- Python
-- Applications compatibles TorchScript
+- TorchScript projects
+- Real-time audio applications
 
 ---
 
-### 🚀 Interface non bloquante
+## 🧵 Multi-Threaded Architecture
 
-Toutes les opérations lourdes sont exécutées dans des **QThread dédiés** :
+Long-running tasks execute in dedicated QThreads.
+
+Tasks running in background:
 
 - Conversion
-- Prétraitement
-- Entraînement
+- Preprocessing
+- Training
 - Export
 
-L'interface reste réactive même lors d'entraînements de plusieurs heures.
+This keeps the GUI responsive during processing and training sessions that may last several hours or even days.
 
 ---
 
-### 📊 Retour d'information détaillé
+## 📋 Detailed Logging
 
-Pendant les traitements :
-
-- Affichage de la tâche courante
-- Affichage du fichier en cours
-- Compteur de progression
-- Sortie console complète
-- Journalisation des erreurs
-
-Exemple :
-
-```
-Conversion : Violin
-
-[125/1502]
-violin_G3_forte.wav
-```
-
----
-
-## 🏗️ Structure du projet
+Real-time feedback includes:
 
 ```text
-dataset/
-├── violin/
-│   ├── sample1.mp3
-│   ├── sample2.flac
-│   └── wav/
-│       ├── sample1.wav
-│       └── sample2.wav
+Conversion: Guitar
 
-data/
-├── violin/
-│   ├── metadata.yaml
-│   └── ...
-
-runs/
-├── violin/
-│   └── version_0/
-
-models/
-└── violin.ts
+[122/1457]
+guitar_F3_forte.wav
 ```
+
+The integrated console displays the complete output from:
+
+- FFmpeg
+- RAVE preprocess
+- RAVE train
+- RAVE export
 
 ---
 
-## 📋 Workflow recommandé
-
-### 1. Ajouter un dataset
-
-Créer un dossier :
+# 📁 Project Structure
 
 ```text
-dataset/violin
-```
+RAVE-Audio-Modeller/
 
-et y copier vos fichiers audio.
+├── dataset/
+│   ├── guitar/
+│   ├── violin/
+│   ├── piano/
+│   └── voice/
+│
+├── data/
+│
+├── runs/
+│
+├── exports/
+│
+├── models/
+│
+└── logs/
+```
 
 ---
 
-### 2. Convertir
+# 🔥 Typical Workflow
 
-Cliquer sur :
+## 1. Add Audio Files
+
+Create a dataset directory:
+
+```text
+dataset/guitar
+```
+
+and copy your audio files into it.
+
+---
+
+## 2. Convert
+
+Click:
 
 ```text
 Convert Dataset
 ```
 
-Tous les fichiers compatibles sont convertis dans :
+The application converts all supported files into:
 
 ```text
-dataset/violin/wav
+dataset/guitar/wav
 ```
 
 ---
 
-### 3. Prétraiter
+## 3. Preprocess
 
-Cliquer sur :
+Click:
 
 ```text
 Preprocess Dataset
 ```
 
-L'application exécute :
+The corresponding RAVE dataset is generated:
 
-```bash
-rave preprocess
+```text
+data/guitar
 ```
-
-et génère les données nécessaires à l'entraînement.
 
 ---
 
-### 4. Entraîner
+## 4. Train
 
-Cliquer sur :
+Click:
 
 ```text
 Train Model
 ```
 
-et suivre l'évolution directement dans la console intégrée.
+Training starts immediately and progress is displayed in real time.
 
 ---
 
-### 5. Exporter
+## 5. Export
 
-Une fois l'entraînement terminé :
+Click:
 
 ```text
 Export Model
 ```
 
-pour produire un modèle utilisable en temps réel.
+A TorchScript model is generated and ready for use.
 
 ---
 
-## 🔧 Dépendances
+# 🎹 Supported Dataset Types
+
+## Musical Instruments
+
+- Piano
+- Guitar
+- Violin
+- Cello
+- Flute
+- Saxophone
+- Trumpet
+- Clarinet
+- Drums
+
+## Voice
+
+- Singing
+- Speech
+- Narration
+- Choir
+- Beatboxing
+
+## Sound Design
+
+- Ambient recordings
+- Textures
+- Sound effects
+- Synthesizers
+- Experimental audio
+
+---
+
+# 🛠 Requirements
+
+## Software
 
 - Python 3.10+
-- PySide6
-- RAVE
+- FFmpeg
 - PyTorch
 - PyTorch Lightning
-- FFmpeg
+- RAVE
+- PySide6
+
+## GPU (Recommended)
+
+For training large datasets:
+
+- NVIDIA GPU
+- CUDA-compatible PyTorch installation
+
+CPU-only training is possible but significantly slower.
 
 ---
 
-## 🎯 Cas d'utilisation
+# 📦 Installation
 
-### Instruments
+Clone the repository:
 
-- Violon
-- Piano
-- Guitare
-- Saxophone
-- Trompette
-- Batterie
+```bash
+git clone https://github.com/WebCyberman/RAVE-Audio-Modeller.git
 
-### Voix
+cd RAVE-Audio-Modeller
+```
 
-- Chant
-- Spoken Word
-- Narration
-- Beatbox
+Create a virtual environment:
 
-### Design sonore
+```bash
+python -m venv .venv
+```
 
-- Ambiances
-- Bruitages
-- Textures
-- Synthétiseurs
+Activate it:
+
+### Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+### Linux / macOS
+
+```bash
+source .venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
-## 🙏 Remerciements
+# ⚠ RAVE Dependency License
 
-Ce projet repose sur l'excellent travail de l'équipe IRCAM ayant développé :
+RAVE Audio Modeller is an independent graphical frontend for the RAVE ecosystem.
 
-**RAVE — Realtime Audio Variational AutoEncoder**
+RAVE itself is developed by IRCAM and distributed under:
 
-Projet officiel :
+**Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**
+
+Users remain responsible for complying with the licensing terms of RAVE and any associated models.
+
+Official RAVE repository:
 
 https://github.com/acids-ircam/RAVE
 
 ---
 
-## 📜 Licence
+# 🙏 Credits
 
-Ce projet est distribué sous la licence de votre choix.
+This project would not exist without the incredible work of the IRCAM team and the creators of RAVE.
 
-```
+Special thanks to:
+
+- IRCAM
+- ACIDS Team
+- PyTorch Community
+- FFmpeg Project
+- PySide6 / Qt
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome.
+
+Possible contribution areas:
+
+- New export options
+- Linux support improvements
+- Dataset visualization
+- Training statistics
+- Hyperparameter management
+- Multi-model workflows
+
+Feel free to open an issue or submit a pull request.
+
+---
+
+# ⭐ Support The Project
+
+If you find this project useful:
+
+- ⭐ Star the repository
+- 🐛 Report bugs
+- 💡 Suggest new features
+- �he LICENSE file for details.
+
+---
+
+<div align="center">
+
+### 🎵 Train your own neural instruments with RAVE
+
+Made with ❤️ by WebCyberman
+
+</div>
