@@ -7,7 +7,7 @@ exports/
 # Entraînements
 runs/
 
-# Fichier Audio
+# Fichiers Audio
 wav/
 *.wav
 
