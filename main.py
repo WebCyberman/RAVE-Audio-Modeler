@@ -36,6 +36,8 @@ from PySide6.QtWidgets import (
     QHeaderView,
 )
 
+import main
+
 SUPPORTED_AUDIO = {
     ".wav",
     ".mp3",
@@ -338,7 +340,7 @@ class PreprocessWorker(QObject):
 
                 self.process = subprocess.Popen(
                     [
-                        "rave",
+                        get_rave_executable(),
                         "preprocess",
                         "--input_path",
                         str(wav_dir),
@@ -581,29 +583,22 @@ class TrainWorker(QObject):
             self.log.emit("=" * 60)
 
             command = [
-                        "rave",
+                        get_rave_executable(),
                         "train",
                         "--name",
                         dataset.name,
-
                         "--db_path",
                         str(db_path),
-
                         "--out_path",
                         "runs",
-
                         "--channels",
                         "1",
-
                         "--batch",
                         "8",
-
                         "--gpu",
                         "0",
-
                         "--save_every",
                         "50000",
-
                         "--val_every",
                         "10000"
                     ]
@@ -834,19 +829,14 @@ class ExportWorker(QObject):
             try:
 
                 command = [
-
-                    "rave",
+                    get_rave_executable(),
                     "export",
-
                     "--run",
                     str(run_dir),
-
                     "--output",
                     str(output_file),
-
                     "--name",
                     dataset.name,
-
                     "--streaming"
                 ]
 
@@ -982,6 +972,37 @@ class DatasetTree(QTreeWidget):
             QHeaderView.ResizeToContents
         )
 
+def check_dependencies():
+
+    try:
+        subprocess.run(
+            ["ffmpeg", "-version"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+
+    except FileNotFoundError:
+
+        raise RuntimeError(
+            "FFmpeg introuvable."
+        )
+
+    rave_exe = (
+            Path(sys.executable).parent
+            / "rave.exe"
+    )
+
+    if not rave_exe.exists():
+        raise RuntimeError(
+            f"RAVE introuvable : {rave_exe}"
+        )
+
+def get_rave_executable():
+
+    return str(
+        Path(sys.executable).parent
+        / "rave.exe"
+    )
 
 def count_audio_files(dataset):
 
@@ -1192,6 +1213,8 @@ class MainWindow(QMainWindow):
             1200,
             700
         )
+
+        main.check_dependencies()
 
         self.build_ui()
 

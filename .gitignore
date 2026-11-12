@@ -11,9 +11,6 @@ runs/
 wav/
 *.wav
 
-# Screens
-screens/
-
 # Fichiers Textes
 git-start-help.txt
 

@@ -28,11 +28,11 @@ A complete GUI for the RAVE ecosystem that allows musicians, sound designers, re
 
 | Dataset Management | Training |
 |-------------------|----------|
-| ![](docs/images/datasets.png) | ![](docs/images/training.png) |
+| ![](screens/Dataset-Management-2026-11-12.png) | ![](screens/Training-2026-11-12.png) |
 
 | Preprocessing | Export |
 |--------------|--------|
-| ![](docs/images/preprocess.png) | ![](docs/images/export.png) |
+| ![](screens/Preprocessing-2026-11-12.png) | ![](screens/Export-2026-11-12.png) |
 
 ---
 
