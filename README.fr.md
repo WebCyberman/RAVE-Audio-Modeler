@@ -34,7 +34,7 @@ Une application de bureau permettant de créer et entraîner facilement des mod�
 
 # 🚀 Présentation
 
-**RAVE Audio Modeller** est une interface graphique développée avec **PySide6** qui simplifie l'ensemble du workflow RAVE.
+**RAVE Audio Modeler** est une interface graphique développée avec **PySide6** qui simplifie l'ensemble du workflow RAVE.
 
 Au lieu d'utiliser manuellement des commandes telles que :
 
