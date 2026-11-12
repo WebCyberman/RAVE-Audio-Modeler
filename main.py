@@ -336,6 +336,21 @@ class PreprocessWorker(QObject):
                 exist_ok=True
             )
 
+            wav_count = count_wav_files(
+                dataset
+            )
+
+            if wav_count == 0:
+                self.log.emit(
+                    f"{dataset.name} ignoré : aucun WAV."
+                )
+
+                continue
+
+            self.log.emit(
+                f"WAV détectés : {wav_count}"
+            )
+
             try:
 
                 self.process = subprocess.Popen(
@@ -569,6 +584,28 @@ class TrainWorker(QObject):
 
                 continue
 
+            with open(
+                    metadata_file,
+                    "r",
+                    encoding="utf-8"
+            ) as f:
+
+                meta = yaml.safe_load(f)
+
+            duration = meta.get(
+                "n_seconds",
+                0
+            )
+
+            if duration <= 0:
+                self.log.emit(
+                    f"{dataset.name} ignoré : "
+                    f"dataset vide "
+                    f"({duration:.1f}s)"
+                )
+
+                continue
+
             self.task.emit(
                 f"[{dataset_index}/{total}] "
                 f"Train : {dataset.name}"
@@ -791,6 +828,8 @@ class ExportWorker(QObject):
                 dataset.name
             )
 
+            print(run_dir)
+
             if run_dir is None:
 
                 self.log.emit(
@@ -839,6 +878,11 @@ class ExportWorker(QObject):
                     dataset.name,
                     "--streaming"
                 ]
+
+                self.log.emit(
+                    "Commande : "
+                    + " ".join(command)
+                )
 
                 self.process = subprocess.Popen(
                     command,
@@ -1191,6 +1235,39 @@ def get_latest_run(dataset_name):
     )
 
     return runs[0]
+
+def has_export(dataset_name):
+
+    export_dir = (
+        Path("exports")
+        / f"{dataset_name}.ts"
+    )
+
+    if not export_dir.exists():
+        return False
+
+    return any(
+        export_dir.glob("*.ts")
+    )
+
+def get_export_file(dataset_name):
+
+    export_dir = (
+        Path("exports")
+        / f"{dataset_name}.ts"
+    )
+
+    if not export_dir.exists():
+        return None
+
+    files = list(
+        export_dir.glob("*.ts")
+    )
+
+    if not files:
+        return None
+
+    return files[0]
 
 
 # ---------------------------------------------------------
@@ -1694,12 +1771,9 @@ class MainWindow(QMainWindow):
             / dataset.name
         )
 
-        ts_file = (
-            Path("exports")
-            / f"{dataset.name}.ts"
-        )
-
-        if ts_file.exists():
+        if has_export(
+                dataset.name
+        ):
             return "✅ TS"
 
         if has_checkpoint(
@@ -1958,10 +2032,10 @@ class MainWindow(QMainWindow):
         )
 
         self.lbl_ts.setText(
-            "Oui" if (
-                Path("exports")
-                / f"{dataset.name}.ts"
-            ).exists()
+            "Oui"
+            if has_export(
+                dataset.name
+            )
             else "Non"
         )
 
@@ -1982,13 +2056,17 @@ class MainWindow(QMainWindow):
             has_db
         )
 
-        has_ckpt = (
-                Path("runs")
-                / dataset.name
-        ).exists()
+        has_ckpt = has_checkpoint(
+            dataset.name
+        )
+
+        has_ts = has_export(
+            dataset.name
+        )
 
         self.btn_export.setEnabled(
             has_ckpt
+            #and not has_ts
         )
 
     # ---------------------------------------------------------
@@ -2256,10 +2334,75 @@ class MainWindow(QMainWindow):
 
         datasets = self.get_selected_datasets()
 
-        for dataset in datasets:
+        if not datasets:
             self.write_log(
-                f"Export : {dataset.name}"
+                "Aucun dataset sélectionné."
             )
+
+            return
+
+        self.thread = QThread()
+
+        self.worker = ExportWorker(
+            datasets
+        )
+
+        self.worker.moveToThread(
+            self.thread
+        )
+
+        self.thread.started.connect(
+            self.worker.run
+        )
+
+        self.worker.started.connect(
+            self.export_started
+        )
+
+        self.worker.finished.connect(
+            self.export_finished
+        )
+
+        self.worker.task.connect(
+            self.lbl_task.setText
+        )
+
+        self.worker.file.connect(
+            self.lbl_file.setText
+        )
+
+        self.worker.log.connect(
+            self.write_log
+        )
+
+        self.worker.finished.connect(
+            self.thread.quit
+        )
+
+        self.worker.finished.connect(
+            self.worker.deleteLater
+        )
+
+        self.worker.finished.connect(
+            self.task_finished
+        )
+
+        self.thread.finished.connect(
+            self.thread.deleteLater
+        )
+
+        self.thread.finished.connect(
+            self.scan_datasets
+        )
+
+        self.thread.start()
+
+        self.btn_convert.setEnabled(False)
+        self.btn_preprocess.setEnabled(False)
+        self.btn_train.setEnabled(False)
+        self.btn_export.setEnabled(False)
+
+        self.btn_stop.setEnabled(True)
 
     def export_started(self):
 
