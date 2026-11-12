@@ -24,8 +24,6 @@ A complete GUI for the RAVE ecosystem that allows musicians, sound designers, re
 
 # 📸 Screenshots
 
-> Add your screenshots here
-
 | Dataset Management | Training |
 |-------------------|----------|
 | ![](screens/Dataset-Management-2026-11-12.png) | ![](screens/Training-2026-11-12.png) |

@@ -1,4 +1,7 @@
 
+APP_NAME = "RAVE Studio"
+APP_VERSION = "0.5.0"
+
 import sys
 
 import re
@@ -1283,7 +1286,7 @@ class MainWindow(QMainWindow):
         self.dataset_root = None
 
         self.setWindowTitle(
-            "RAVE Studio"
+            f"{APP_NAME} {APP_VERSION}"
         )
 
         self.resize(

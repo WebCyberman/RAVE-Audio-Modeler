@@ -20,8 +20,6 @@ Une application de bureau permettant de créer et entraîner facilement des mod�
 
 # 📸 Captures d'écran
 
-> Ajoutez ici vos captures d'écran
-
 | Gestion des datasets | Entraînement |
 |----------------------|--------------|
 | docs/images/datasets.png | docs/images/training.png |
