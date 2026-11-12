@@ -34,7 +34,7 @@ Une application de bureau permettant de créer et entraîner facilement des mod�
 
 # 🚀 Présentation
 
-**RAVE Audio Modeller** est une interface graphique développée avec **PySide6** qui simplifie l'ensemble du workflow RAVE.
+**RAVE Audio Modeler** est une interface graphique développée avec **PySide6** qui simplifie l'ensemble du workflow RAVE.
 
 Au lieu d'utiliser manuellement des commandes telles que :
 
@@ -258,7 +258,7 @@ La console intégrée affiche les sorties complètes de :
 # 📁 Structure du projet
 
 ```text
-RAVE-Audio-Modeller/
+RAVE-Audio-Modeler/
 
 ├── dataset/
 │   ├── guitare/
@@ -443,7 +443,7 @@ pip install -r requirements.txt
 
 # ⚠ Licence de RAVE
 
-RAVE Audio Modeller est une interface graphique indépendante.
+RAVE Audio Modeler est une interface graphique indépendante.
 
 Le projet **RAVE** est développé par l'IRCAM et distribué sous la licence :
 

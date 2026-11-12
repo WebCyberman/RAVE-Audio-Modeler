@@ -6,5 +6,5 @@ git add .
 git status
 
 git commit -m "Initial commit"
-git remote add origin https://github.com/WebCyberman/RAVE-Audio-Modeller.git
+git remote add origin https://github.com/WebCyberman/RAVE-Audio-Modeler.git
 git push --set-upstream origin master

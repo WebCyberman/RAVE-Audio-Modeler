@@ -38,7 +38,7 @@ A complete GUI for the RAVE ecosystem that allows musicians, sound designers, re
 
 # 🚀 Overview
 
-**RAVE Audio Modeller** is a desktop application built with **PySide6** that simplifies the complete RAVE workflow.
+**RAVE Audio Modeler** is a desktop application built with **PySide6** that simplifies the complete RAVE workflow.
 
 Instead of manually running commands such as:
 
@@ -266,7 +266,7 @@ The integrated console displays the complete output from:
 # 📁 Project Structure
 
 ```text
-RAVE-Audio-Modeller/
+RAVE-Audio-Modeler/
 
 ├── dataset/
 │   ├── guitar/
@@ -451,7 +451,7 @@ pip install -r requirements.txt
 
 # ⚠ RAVE Dependency License
 
-RAVE Audio Modeller is an independent graphical frontend for the RAVE ecosystem.
+RAVE Audio Modeler is an independent graphical frontend for the RAVE ecosystem.
 
 RAVE itself is developed by IRCAM and distributed under:
 
