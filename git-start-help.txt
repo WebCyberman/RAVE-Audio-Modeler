@@ -7,4 +7,5 @@ git status
 
 git commit -m "Initial commit"
 git remote add origin https://github.com/WebCyberman/RAVE-Audio-Modeler.git
-git push --set-upstream origin master
+git push --set-upstream origin main
+
