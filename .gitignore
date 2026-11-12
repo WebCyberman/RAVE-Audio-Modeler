@@ -14,8 +14,8 @@ wav/
 # Screens
 screens/
 
-# Textes
-*.txt
+# Fichiers Textes
+git-start-help.txt
 
 # Logs
 *.log
