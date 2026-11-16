@@ -2,6 +2,9 @@
 
 # 🎵 RAVE Audio Modeler
 
+![Version](https://img.shields.io/badge/Version-1.0.0-success.svg)
+
+
 ### Interface graphique complète pour entraîner, exporter et gérer des modèles RAVE
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
@@ -22,11 +25,47 @@ Une application de bureau permettant de créer et entraîner facilement des mod�
 
 | Gestion des datasets | Entraînement |
 |----------------------|--------------|
-| docs/images/datasets.png | docs/images/training.png |
+| ![](screens/Dataset-Management-2026-11-12.png) | ![](screens/Training-2026-11-12.png) |
 
 | Prétraitement | Export |
 |--------------|---------|
-| docs/images/preprocess.png | docs/images/export.png |
+| ![](screens/Preprocessing-2026-11-12.png) | ![](screens/Export-2026-11-12.png) |
+
+---
+
+# 🚀 Nouveautés de la version 1.0.0
+
+La version 1.0 introduit la première chaîne de traitement complète permettant de créer un modèle RAVE de bout en bout.
+
+### Nouvelles fonctionnalités
+
+✅ Mode Pipeline complet
+
+✅ Détection automatique de l'état des datasets
+
+✅ Reprise automatique des checkpoints
+
+✅ Export TorchScript Streaming
+
+✅ Arrêt sécurisé des traitements
+
+✅ Traitement multi-datasets
+
+### Workflow complet
+
+```text
+Audio
+ ↓
+WAV
+ ↓
+DB
+ ↓
+CKPT
+ ↓
+TS
+```
+
+Le bouton **Pipeline** exécute automatiquement toutes les étapes nécessaires et ignore celles qui ont déjà été effectuées.
 
 ---
 
@@ -54,6 +93,8 @@ l'application prend en charge automatiquement :
 - Le suivi de progression
 
 Le tout depuis une seule interface utilisateur.
+
+La version 1.0 ajoute également un mode **Pipeline entièrement automatisé** capable d'exécuter la conversion, le préprocess, l'entraînement et l'export en un seul clic.
 
 ---
 
@@ -125,6 +166,22 @@ Ces informations permettent d'évaluer rapidement la qualité d'un dataset avant
 
 ---
 
+## 📊 Suivi automatique des datasets
+
+Chaque dataset est automatiquement classé selon son état d'avancement.
+
+| Statut | Description |
+|----------|----------|
+| 🔴 Audio | Dataset brut |
+| 🟠 WAV | Audio converti |
+| 🟡 DB | Préprocess terminé |
+| 🔵 CKPT | Checkpoint disponible |
+| ✅ TS | Export terminé |
+
+Cela permet d'identifier immédiatement l'étape déjà réalisée pour chaque dataset.
+
+---
+
 ## ⚙️ Prétraitement RAVE
 
 L'application exécute automatiquement :
@@ -185,10 +242,10 @@ Exemple :
 
 ```text
 runs/
-└── guitare/
-    └── version_3/
+└── guitar_e18d54798e/
+    └── version_0/
         └── checkpoints/
-            └── last.ckpt
+            └── epoch-xxxx.ckpt
 ```
 
 Le prochain lancement reprendra automatiquement l'entraînement au dernier point sauvegardé.
@@ -206,7 +263,9 @@ rave export
 Génération de fichiers :
 
 ```text
-guitare.ts
+exports/
+└── guitar.ts/
+    └── guitar_streaming.ts
 ```
 
 compatibles avec :
@@ -218,6 +277,46 @@ compatibles avec :
 - TorchScript
 - Applications temps réel
 
+
+---
+
+## ⚡ Pipeline automatisée
+
+La version 1.0 introduit une pipeline entièrement automatisée.
+
+L'application exécute automatiquement toutes les étapes manquantes nécessaires à la génération d'un modèle TorchScript.
+
+```text
+Audio
+ ↓
+Conversion
+ ↓
+Préprocess
+ ↓
+Entraînement
+ ↓
+Export
+```
+
+Les étapes déjà terminées sont automatiquement ignorées.
+
+Exemples :
+
+```text
+Audio → WAV → DB → CKPT → TS
+```
+
+```text
+DB → CKPT → TS
+```
+
+```text
+CKPT → TS
+```
+
+```text
+TS → Aucun traitement nécessaire
+```
 ---
 
 ## 🧵 Architecture multi-threads
@@ -228,6 +327,7 @@ Toutes les opérations lourdes sont exécutées dans des **QThreads dédiés** :
 - Prétraitement
 - Entraînement
 - Export
+- Pipeline
 
 L'interface reste fluide même pendant des traitements de plusieurs heures.
 
@@ -250,6 +350,24 @@ La console intégrée affiche les sorties complètes de :
 - RAVE Preprocess
 - RAVE Train
 - RAVE Export
+
+---
+
+## 🛑 Arrêt sécurisé des traitements
+
+Toutes les opérations longues peuvent être interrompues proprement depuis l'interface.
+
+Tâches supportées :
+
+- Conversion
+- Préprocess
+- Entraînement
+- Export
+- Pipeline
+
+Les processus actifs sont arrêtés proprement tout en conservant une interface réactive.
+
+---
 
 ---
 
@@ -347,6 +465,30 @@ pour générer un modèle utilisable en temps réel.
 
 ---
 
+## Alternative : Pipeline
+
+Cliquer simplement sur :
+
+```text
+Pipeline
+```
+
+L'application exécutera automatiquement :
+
+```text
+Conversion
+ ↓
+Préprocess
+ ↓
+Entraînement
+ ↓
+Export
+```
+
+jusqu'à la génération du modèle TorchScript.
+
+---
+
 # 🎹 Types de datasets pris en charge
 
 ## Instruments
@@ -436,6 +578,30 @@ Installation des dépendances :
 ```bash
 pip install -r requirements.txt
 ```
+---
+
+# 📌 Version
+
+Version actuelle :
+
+```text
+v1.0.0
+```
+
+Première version stable intégrant le workflow complet RAVE.
+
+```text
+Audio
+ ↓
+WAV
+ ↓
+DB
+ ↓
+CKPT
+ ↓
+TS
+```
+---
 
 ---
 

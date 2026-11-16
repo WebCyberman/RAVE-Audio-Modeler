@@ -6,6 +6,8 @@
 
 # 🎵 RAVE Audio Modeler
 
+![Version](https://img.shields.io/badge/Version-1.0.0-success.svg)
+
 ### Train, export and manage RAVE models through a modern graphical interface
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
@@ -34,6 +36,42 @@ A complete GUI for the RAVE ecosystem that allows musicians, sound designers, re
 
 ---
 
+# 🚀 What's New in v1.0.0
+
+Version 1.0 introduces the first complete end-to-end workflow for RAVE model creation.
+
+### New Features
+
+✅ Full Pipeline mode
+
+✅ Automatic dataset status detection
+
+✅ Automatic checkpoint recovery
+
+✅ TorchScript streaming export
+
+✅ Safe task interruption
+
+✅ Multi-dataset processing
+
+### Complete Workflow
+
+```text
+Audio
+ ↓
+WAV
+ ↓
+DB
+ ↓
+CKPT
+ ↓
+TS
+```
+
+The Pipeline button automatically executes all required stages and skips those already completed.
+
+---
+
 # 🚀 Overview
 
 **RAVE Audio Modeler** is a desktop application built with **PySide6** that simplifies the complete RAVE workflow.
@@ -58,6 +96,8 @@ the application provides an intuitive graphical interface that manages:
 - Console logs
 
 All from a single window.
+
+Version 1.0 adds a fully automated Pipeline mode capable of converting, preprocessing, training and exporting models with a single click.
 
 ---
 
@@ -129,6 +169,22 @@ Helping users estimate whether a dataset is suitable for training.
 
 ---
 
+## 📊 Dataset Status Tracking
+
+Each dataset is automatically classified according to its current state.
+
+| Status | Meaning |
+|----------|----------|
+| 🔴 Audio | Raw dataset |
+| 🟠 WAV | Audio converted |
+| 🟡 DB | Preprocessed dataset |
+| 🔵 CKPT | Checkpoint available |
+| ✅ TS | Export completed |
+
+This allows users to immediately identify the current stage of each dataset.
+
+---
+
 ## ⚙️ RAVE Preprocessing
 
 Automatically runs:
@@ -189,10 +245,10 @@ Example:
 
 ```text
 runs/
-└── guitar/
-    └── version_3/
+└── guitar_e18d54798e/
+    └── version_0/
         └── checkpoints/
-            └── last.ckpt
+            └── epoch-xxxx.ckpt
 ```
 
 The next training session resumes from the latest checkpoint instead of restarting from scratch.
@@ -212,7 +268,9 @@ rave export
 and generates TorchScript models:
 
 ```text
-guitar.ts
+exports/
+└── guitar.ts/
+    └── guitar_streaming.ts
 ```
 
 usable in:
@@ -226,6 +284,45 @@ usable in:
 
 ---
 
+## ⚡ One‑Click Pipeline
+
+Version 1.0 introduces a fully automated processing pipeline.
+
+The software automatically performs all missing steps required to obtain a TorchScript model.
+
+```text
+Audio
+ ↓
+Convert
+ ↓
+Preprocess
+ ↓
+Train
+ ↓
+Export
+```
+
+Already completed stages are skipped automatically.
+
+Examples:
+
+```text
+Audio → WAV → DB → CKPT → TS
+```
+
+```text
+DB → CKPT → TS
+```
+
+```text
+CKPT → TS
+```
+
+```text
+TS → Nothing to do
+```
+---
+
 ## 🧵 Multi-Threaded Architecture
 
 Long-running tasks execute in dedicated QThreads.
@@ -236,6 +333,7 @@ Tasks running in background:
 - Preprocessing
 - Training
 - Export
+- Pipeline
 
 This keeps the GUI responsive during processing and training sessions that may last several hours or even days.
 
@@ -258,6 +356,22 @@ The integrated console displays the complete output from:
 - RAVE preprocess
 - RAVE train
 - RAVE export
+
+---
+
+## 🛑 Safe Task Interruption
+
+All long-running operations can be interrupted safely.
+
+Supported tasks:
+
+- Conversion
+- Preprocessing
+- Training
+- Export
+- Pipeline
+
+Active subprocesses are terminated cleanly while keeping the GUI responsive.
 
 ---
 
@@ -355,6 +469,30 @@ A TorchScript model is generated and ready for use.
 
 ---
 
+## Alternative: Pipeline
+
+Click:
+
+```text
+Pipeline
+```
+
+The application automatically performs:
+
+```text
+Convert
+ ↓
+Preprocess
+ ↓
+Train
+ ↓
+Export
+```
+
+until a TorchScript model is produced.
+
+---
+
 # 🎹 Supported Dataset Types
 
 ## Musical Instruments
@@ -445,6 +583,29 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
+---
+
+# 📌 Version
+
+Current Release
+
+```text
+v1.0.0
+```
+
+First stable release featuring the complete RAVE workflow.
+
+```text
+Audio
+ ↓
+WAV
+ ↓
+DB
+ ↓
+CKPT
+ ↓
+TS
+```
 ---
 
 # ⚠ RAVE Dependency License
