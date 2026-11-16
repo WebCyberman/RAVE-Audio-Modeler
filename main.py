@@ -539,6 +539,10 @@ class TrainWorker(QObject):
 
         self.stop_requested = True
 
+        self.log.emit(
+            "Arrêt de l'entraînement..."
+        )
+
         if self.process:
 
             try:
@@ -974,6 +978,342 @@ class ExportWorker(QObject):
         self.task.emit(
             "Export terminé"
         )
+
+        self.finished.emit()
+
+class PipelineWorker(QObject):
+
+    started = Signal()
+    finished = Signal()
+
+    log = Signal(str)
+
+    task = Signal(str)
+    file = Signal(str)
+
+    def __init__(self, datasets):
+
+        super().__init__()
+
+        self.datasets = datasets
+
+        self.stop_requested = False
+
+        self.current_worker = None
+
+    def stop(self):
+
+        self.stop_requested = True
+
+        self.log.emit(
+            "Arrêt demandé..."
+        )
+
+        if self.current_worker:
+
+            self.log.emit(
+                f"Arrêt de "
+                f"{self.current_worker.__class__.__name__}"
+            )
+
+            try:
+
+                self.current_worker.stop()
+
+            except Exception as e:
+
+                self.log.emit(
+                    f"Erreur stop : {e}"
+                )
+
+    def _connect_worker(
+            self,
+            worker
+    ):
+
+        if hasattr(
+                worker,
+                "log"
+        ):
+            worker.log.connect(
+                self.log.emit
+            )
+
+        if hasattr(
+                worker,
+                "task"
+        ):
+            worker.task.connect(
+                self.task.emit
+            )
+
+        if hasattr(
+                worker,
+                "file"
+        ):
+            worker.file.connect(
+                self.file.emit
+            )
+
+    def run(self):
+
+        self.started.emit()
+
+        total = len(
+            self.datasets
+        )
+
+        if total == 0:
+            self.log.emit(
+                "Aucun dataset sélectionné."
+            )
+
+            self.finished.emit()
+
+            return
+
+        for dataset_index, dataset in enumerate(
+                self.datasets,
+                start=1
+        ):
+
+            if self.stop_requested:
+                break
+
+            self.log.emit("")
+            self.log.emit("=" * 60)
+            self.log.emit(
+                f"Pipeline : {dataset.name}"
+            )
+            self.log.emit("=" * 60)
+
+            self.task.emit(
+                f"[{dataset_index}/{total}] "
+                f"Pipeline : {dataset.name}"
+            )
+
+            #
+            # TS déjà exporté
+            #
+
+            if has_export(
+                    dataset.name
+            ):
+                self.log.emit(
+                    "Export déjà présent."
+                )
+
+                continue
+
+            #
+            # Conversion
+            #
+
+            wav_dir = (
+                    dataset
+                    / "wav"
+            )
+
+            has_wav = (
+                    wav_dir.exists()
+                    and count_wav_files(
+                dataset
+            ) > 0
+            )
+
+            if not has_wav:
+
+                self.log.emit(
+                    "Étape : Conversion"
+                )
+
+                worker = ConvertWorker(
+                    [dataset]
+                )
+
+                self.current_worker = worker
+
+                self._connect_worker(
+                    worker
+                )
+
+                try:
+
+                    worker.run()
+
+                finally:
+
+                    self.current_worker = None
+
+                if self.stop_requested:
+                    break
+
+            #
+            # Préprocess
+            #
+
+            metadata_file = (
+                    Path("data")
+                    / dataset.name
+                    / "metadata.yaml"
+            )
+
+            if not metadata_file.exists():
+
+                self.log.emit(
+                    "Étape : Préprocess"
+                )
+
+                worker = PreprocessWorker(
+                    [dataset]
+                )
+
+                self.current_worker = worker
+
+                self._connect_worker(
+                    worker
+                )
+
+                try:
+
+                    worker.run()
+
+                finally:
+
+                    self.current_worker = None
+
+                if self.stop_requested:
+                    break
+
+            #
+            # Vérification DB
+            #
+
+            metadata_file = (
+                    Path("data")
+                    / dataset.name
+                    / "metadata.yaml"
+            )
+
+            if not metadata_file.exists():
+                self.log.emit(
+                    "Préprocess invalide."
+                )
+
+                continue
+
+            #
+            # Entraînement
+            #
+
+            if not has_checkpoint(
+                    dataset.name
+            ):
+
+                self.log.emit(
+                    "Étape : Entraînement"
+                )
+
+                worker = TrainWorker(
+                    [dataset]
+                )
+
+                self.current_worker = worker
+
+                self._connect_worker(
+                    worker
+                )
+
+                try:
+
+                    worker.run()
+
+                finally:
+
+                    self.current_worker = None
+
+                if self.stop_requested:
+                    break
+
+            #
+            # Export
+            #
+
+            if (
+                    has_checkpoint(
+                        dataset.name
+                    )
+                    and not has_export(
+                dataset.name
+            )
+            ):
+
+                self.log.emit(
+                    "Étape : Export"
+                )
+
+                worker = ExportWorker(
+                    [dataset]
+                )
+
+                self.current_worker = worker
+
+                self._connect_worker(
+                    worker
+                )
+
+                try:
+
+                    worker.run()
+
+                finally:
+
+                    self.current_worker = None
+
+                if self.stop_requested:
+                    break
+
+            #
+            # Résultat
+            #
+
+            if has_export(
+                    dataset.name
+            ):
+
+                self.log.emit(
+                    f"{dataset.name} : "
+                    f"pipeline terminée."
+                )
+
+            else:
+
+                self.log.emit(
+                    f"{dataset.name} : "
+                    f"pipeline incomplète."
+                )
+
+        if self.stop_requested:
+
+            self.task.emit(
+                "Pipeline interrompue"
+            )
+
+            self.log.emit(
+                "Pipeline interrompue."
+            )
+
+        else:
+
+            self.task.emit(
+                "Pipeline terminée"
+            )
+
+            self.log.emit(
+                "Pipeline terminée."
+            )
+
+        self.file.emit("")
 
         self.finished.emit()
 
@@ -1492,7 +1832,7 @@ class MainWindow(QMainWindow):
         )
 
         self.btn_pipeline = QPushButton(
-            "Pipeline Complète"
+            "Pipeline"
         )
 
         actions_layout.addWidget(
@@ -1592,6 +1932,10 @@ class MainWindow(QMainWindow):
 
         self.btn_export.clicked.connect(
             self.export_selected
+        )
+
+        self.btn_pipeline.clicked.connect(
+            self.pipeline_selected
         )
 
         self.btn_stop = QPushButton(
@@ -1866,6 +2210,10 @@ class MainWindow(QMainWindow):
 
         self.thread.finished.connect(
             self.thread.deleteLater
+        )
+
+        self.thread.finished.connect(
+            self.cleanup_worker
         )
 
         self.thread.finished.connect(
@@ -2165,6 +2513,10 @@ class MainWindow(QMainWindow):
         )
 
         self.thread.finished.connect(
+            self.cleanup_worker
+        )
+
+        self.thread.finished.connect(
             self.scan_datasets
         )
 
@@ -2278,6 +2630,10 @@ class MainWindow(QMainWindow):
 
         self.thread.finished.connect(
             self.thread.deleteLater
+        )
+
+        self.thread.finished.connect(
+            self.cleanup_worker
         )
 
         self.thread.finished.connect(
@@ -2395,6 +2751,10 @@ class MainWindow(QMainWindow):
         )
 
         self.thread.finished.connect(
+            self.cleanup_worker
+        )
+
+        self.thread.finished.connect(
             self.scan_datasets
         )
 
@@ -2434,6 +2794,125 @@ class MainWindow(QMainWindow):
         )
 
         self.scan_datasets()
+
+    def pipeline_selected(self):
+
+        datasets = self.get_selected_datasets()
+
+        if not datasets:
+            self.write_log(
+                "Aucun dataset sélectionné."
+            )
+
+            return
+
+        self.thread = QThread()
+
+        self.worker = PipelineWorker(
+            datasets
+        )
+
+        self.worker.moveToThread(
+            self.thread
+        )
+
+        self.thread.started.connect(
+            self.worker.run
+        )
+
+        self.worker.started.connect(
+            self.pipeline_started
+        )
+
+        self.worker.finished.connect(
+            self.pipeline_finished
+        )
+
+        self.worker.log.connect(
+            self.write_log
+        )
+
+        self.worker.task.connect(
+            self.lbl_task.setText
+        )
+
+        self.worker.file.connect(
+            self.lbl_file.setText
+        )
+
+        self.worker.finished.connect(
+            self.thread.quit
+        )
+
+        self.worker.finished.connect(
+            self.worker.deleteLater
+        )
+
+        self.thread.finished.connect(
+            self.thread.deleteLater
+        )
+
+        self.thread.finished.connect(
+            self.cleanup_worker
+        )
+
+        self.thread.finished.connect(
+            self.scan_datasets
+        )
+
+        self.thread.start()
+
+    def pipeline_started(self):
+
+        self.progress.setRange(
+            0,
+            0
+        )
+
+        self.write_log(
+            "Pipeline démarrée"
+        )
+
+        self.btn_convert.setEnabled(
+            False
+        )
+
+        self.btn_preprocess.setEnabled(
+            False
+        )
+
+        self.btn_train.setEnabled(
+            False
+        )
+
+        self.btn_export.setEnabled(
+            False
+        )
+
+        self.btn_pipeline.setEnabled(
+            False
+        )
+
+        self.btn_stop.setEnabled(
+            True
+        )
+
+    def pipeline_finished(self):
+
+        self.progress.setRange(
+            0,
+            100
+        )
+
+        self.progress.setValue(
+            100
+        )
+
+        self.write_log(
+            "Pipeline terminée"
+        )
+
+        self.task_finished()
 
     def update_selection_count(self):
 
@@ -2505,9 +2984,6 @@ class MainWindow(QMainWindow):
 
     def task_finished(self):
 
-        self.worker = None
-        self.thread = None
-
         self.write_log(
             "Traitement terminé."
         )
@@ -2516,8 +2992,14 @@ class MainWindow(QMainWindow):
         self.btn_preprocess.setEnabled(True)
         self.btn_train.setEnabled(True)
         self.btn_export.setEnabled(True)
+        self.btn_pipeline.setEnabled(True)
 
         self.btn_stop.setEnabled(False)
+
+    def cleanup_worker(self):
+
+        self.worker = None
+        self.thread = None
 
     def write_log(self, text):
 
