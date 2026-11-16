@@ -1,6 +1,6 @@
 
-APP_NAME = "RAVE Studio"
-APP_VERSION = "0.5.0"
+APP_NAME = "RAVE Audio Modeler"
+APP_VERSION = "1.0.0"
 
 import sys
 
